@@ -193,6 +193,12 @@ function Player(camera) {
 		vector.copy( direction ).applyEuler( rotation );
 	};
 
+	this.setPosition = function(x, y, z) {
+		cannonBody.position.x = x;
+		cannonBody.position.y = y;
+		cannonBody.position.z = z;
+	}
+
 	var inputVelocity = new THREE.Vector3();
 
 	var playerDirection = vectorZero;

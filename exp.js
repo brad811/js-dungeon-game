@@ -97,6 +97,7 @@ var add_plane = function(options) {
 	options['scene'].add( mesh );
 }
 
+/*
 // Heavy red box
 add_box({
 	world: world,
@@ -121,12 +122,12 @@ add_ball({
 	pos: { x: 0, y: 1, z: 0 },
 	castShadow: true
 });
-
+*/
 
 var dungeon = JSON.parse(dungeonJson);
 var dungeonWidth = dungeon[0].length;
 var dungeonHeight = dungeon.length;
-var dungeonScale = 3.1;
+var dungeonScale = 3;
 console.log("Dungeon: ("+dungeonWidth+","+dungeonHeight+")");
 
 // Floor
@@ -147,35 +148,44 @@ var WALL = 0,
 	DOOR = 2,
 	TUNNEL = 3;
 
+var startingLocations = [];
+
 for(var y=0; y<dungeonHeight; y++) {
 	for(var x=0; x<dungeonWidth; x++) {
 		if(dungeon[y][x] == WALL) {
-			// if this wall doesn't touch any tunnels or rooms, exclude it so it doesn't slow things down
-			if(
-				y == 0 || x == 0 ||
-				y == dungeonHeight-1 || x == dungeonWidth-1 ||
-				dungeon[y][x-1] != WALL ||
-				dungeon[y][x+1] != WALL ||
-				dungeon[y-1][x] != WALL ||
-				dungeon[y+1][x] != WALL
-				) {
-					add_box({
-						world: world,
-						world_objects: world_objects,
-						scene: scene,
-						material: { color: 0x333333, perPixel: false, specular: 0, shininess: 0, map: null },
-						size: { x: 1 * dungeonScale, y: 1 * dungeonScale, z: 1 * dungeonScale },
-						mass: 0,
-						pos: { x: x*dungeonScale - (dungeonWidth*dungeonScale)/2, y: 0, z: y*dungeonScale - (dungeonHeight*dungeonScale)/2 },
-						castShadow: false
-					});
+			// scale walls to the right
+			if(x > 0 && dungeon[y][x-1] == WALL) {
+				continue;
+			} else {
+				xScale = 1;
+				for(var i = 1; x + i < dungeonWidth; i++) {
+					if(dungeon[y][x + i] == WALL) {
+						xScale++;
+					} else {
+						break;
+					}
 				}
+				add_box({
+					world: world,
+					world_objects: world_objects,
+					scene: scene,
+					material: { color: 0x333333, perPixel: false, specular: 0, shininess: 0, map: null },
+					size: { x: xScale * dungeonScale, y: dungeonScale*3, z: dungeonScale },
+					mass: 0,
+					pos: { x: (x - dungeonWidth/2 + xScale/2)*dungeonScale, y: 0, z: (y - dungeonHeight/2)*dungeonScale },
+					castShadow: false
+				});
+			}
 		} else if(dungeon[y][x] == FLOOR) {
+			if(dungeon[y][x-1] == FLOOR &&
+				dungeon[y][x+1] == FLOOR &&
+				dungeon[y-1][x] == FLOOR &&
+				dungeon[y+1][x] == FLOOR) {
 
+				startingLocations.push({ x: x, y: y });
+			}
 		} else if(dungeon[y][x] == DOOR) {
-			
 		} else if(dungeon[y][x] == TUNNEL) {
-			
 		}
 	}
 }
@@ -184,7 +194,7 @@ for(var y=0; y<dungeonHeight; y++) {
  * Lighting
  ****************************************/
 
-var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+var directionalLight = new THREE.DirectionalLight(0xffffff, 0.1);
 directionalLight.castShadow = true;
 directionalLight.shadowDarkness = 1;
 directionalLight.shadowCameraNear = 0.5;
@@ -205,6 +215,13 @@ var player = new Player(camera);
 scene.add(player.getObject());
 world.add(player.getBody());
 world.addContactMaterial(player.getContactMaterial());
+
+var startingLocation = startingLocations[Math.floor(Math.random()*startingLocations.length)];
+player.setPosition(
+	(startingLocation['x']-dungeonWidth/2)*dungeonScale + dungeonScale/2,
+	dungeonScale,
+	(startingLocation['y']-dungeonHeight/2)*dungeonScale + dungeonScale/2
+);
 
 var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
 if (havePointerLock) {
