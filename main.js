@@ -4,19 +4,28 @@ var dungeonJson = "[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
  * Scene
  ****************************************/
 
-var width = 1280, height = 720;
+var width = $(window).width(), height = $(window).height();
 
 var world = new CANNON.World();
 world.gravity.set(0, -9.81, 0);
 world.broadphase = new CANNON.NaiveBroadphase();
 
-scene = new THREE.Scene();
+var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(75, width/height, 0.1, 1000);
 
 var renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(width, height);
 renderer.shadowMapEnabled = true;
 $(".container").append(renderer.domElement);
+
+var resizeGame = function() {
+	var width = $(window).width();
+	var height = $(window).height();
+	camera.aspect = width/height;
+	renderer.setSize(width, height);
+}
+
+$(window).resize(resizeGame);
+resizeGame();
 
 /****************************************
  * World Objects
