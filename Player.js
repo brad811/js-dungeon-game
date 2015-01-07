@@ -1,14 +1,13 @@
 function Player(camera) {
+	var scope = this;
 	var maxSpeed = 5;
 	var acceleration = 0.4;
 	var jumpVelocity = 12;
 	var mouseSpeed = 0.002;
-	var scope = this;
+	var height = 1.5;
 
-	var q = new THREE.Quaternion();
-	var vectorX = new THREE.Vector3(1,0,0);
-	var vectorY = new THREE.Vector3(0,1,0);
 	var vectorZero = new THREE.Vector3(0,0,0);
+	var PI_4 = Math.PI / 4;
 
 	var pitchObject = new THREE.Object3D();
 	pitchObject.add(camera);
@@ -46,33 +45,7 @@ function Player(camera) {
 		canJump = true;
 	});
 
-	/****************************************
-	 * Head and Body
-	 ****************************************/
-
-	var height = 1.5;
-
-	var bodyBaseY = height*0.4;
-	var bodyMaterial = new THREE.MeshPhongMaterial({ color: 0xff8844, perPixel: true, specular: 0x222222, shininess: 10 });
-	var bodyGeometry = new THREE.BoxGeometry(0.7, height*0.8, 0.3);
-	var bodyMesh = new THREE.Mesh( bodyGeometry, bodyMaterial );
-	scene.add(bodyMesh);
-	bodyMesh.position.set(0,bodyBaseY,-3);
-	bodyMesh.castShadow = true;
-
-	var headBaseY = height*0.95;
-	var headGeometry = new THREE.BoxGeometry(height*0.2, height*0.2, height*0.2);
-	var headMesh = new THREE.Mesh( headGeometry, bodyMaterial );
-	scene.add(headMesh);
-	headMesh.position.set(0,headBaseY,-3);
-	headMesh.castShadow = true;
-
-	/****************************************
-	 * Movement
-	 ****************************************/
-
 	var velocity = cannonBody.velocity;
-	var PI_2 = Math.PI / 2;
 
 	/****************************************
 	 * Flashlight
@@ -104,7 +77,7 @@ function Player(camera) {
 		yawObject.rotation.y -= movementX * mouseSpeed;
 		pitchObject.rotation.x -= movementY * mouseSpeed;
 
-		pitchObject.rotation.x = Math.max( - PI_2, Math.min( PI_2, pitchObject.rotation.x ) );
+		pitchObject.rotation.x = Math.max( -PI_4, Math.min( PI_4, pitchObject.rotation.x ) );
 	};
 
 	var onKeyDown = function(event) {
@@ -253,7 +226,6 @@ function Player(camera) {
 
 		player.getDirection(playerDirection);
 		this.updateFlashlight(playerDirection);
-		this.updateBody(playerDirection);
 	};
 
 	this.updateFlashlight = function(direction) {
@@ -264,24 +236,5 @@ function Player(camera) {
 		spotLightTarget.position.x = yawObject.position.x + direction.x * 2;
 		spotLightTarget.position.y = yawObject.position.y + direction.y * 2;
 		spotLightTarget.position.z = yawObject.position.z + direction.z * 2;
-	};
-
-	this.updateBody = function(direcion) {
-		bodyMesh.rotation.y = yawObject.rotation.y;
-
-		headMesh.quaternion.multiplyQuaternions(new THREE.Quaternion(), new THREE.Quaternion());
-		q.setFromAxisAngle(vectorX, pitchObject.rotation.x);
-		headMesh.quaternion.multiplyQuaternions(q, headMesh.quaternion);
-		q.setFromAxisAngle(vectorY, yawObject.rotation.y);
-		headMesh.quaternion.multiplyQuaternions(q, headMesh.quaternion);
-
-		bodyMesh.position.y = bodyBaseY + yawObject.position.y - height;
-		headMesh.position.y = headBaseY + yawObject.position.y - height;
-
-		bodyMesh.position.x = yawObject.position.x;
-		bodyMesh.position.z = yawObject.position.z;
-
-		headMesh.position.x = yawObject.position.x;
-		headMesh.position.z = yawObject.position.z;
 	};
 }
