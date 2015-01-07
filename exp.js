@@ -11,7 +11,7 @@ world.gravity.set(0, -9.81, 0);
 world.broadphase = new CANNON.NaiveBroadphase();
 
 scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera(75, width/height, 0.1, 10000);
+var camera = new THREE.PerspectiveCamera(75, width/height, 0.1, 1000);
 
 var renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(width, height);
@@ -134,11 +134,24 @@ console.log("Dungeon: ("+dungeonWidth+","+dungeonHeight+")");
 add_plane({
 	world: world,
 	scene: scene,
-	material: { color: 0xbbbbaa, perPixel: true, specular: 0x555555, shininess: 0, map: null },
+	material: { color: 0x998866, perPixel: true, specular: 0x555555, shininess: 0, map: null },
 	width: dungeonWidth * dungeonScale,
 	height: dungeonHeight * dungeonScale,
 	pos: { x: 0, y: 0, z: 0 },
 	rot: { x: 1, y: 0, z: 0, amount: -Math.PI/2 },
+	castShadow: false,
+	receiveShadow: true
+});
+
+// Ceiling
+add_plane({
+	world: world,
+	scene: scene,
+	material: { color: 0x88bbff, perPixel: true, specular: 0x555555, shininess: 0, map: null },
+	width: dungeonWidth * dungeonScale,
+	height: dungeonHeight * dungeonScale,
+	pos: { x: 0, y: dungeonScale*3/2, z: 0 },
+	rot: { x: 1, y: 0, z: 0, amount: Math.PI/2 },
 	castShadow: false,
 	receiveShadow: true
 });
@@ -194,16 +207,11 @@ for(var y=0; y<dungeonHeight; y++) {
  * Lighting
  ****************************************/
 
-var directionalLight = new THREE.DirectionalLight(0xffffff, 0.1);
-directionalLight.castShadow = true;
-directionalLight.shadowDarkness = 1;
-directionalLight.shadowCameraNear = 0.5;
-directionalLight.shadowCameraFar = 100;
-directionalLight.shadowCameraLeft = -5;
-directionalLight.shadowCameraRight = 5;
-directionalLight.shadowCameraTop = 5;
-directionalLight.shadowCameraBottom = -5;
-scene.add(directionalLight);
+var skyColorHex = 0xffffff;
+var groundColorHex = 0xffffff;
+var intensity = 0.05;
+var hl = new THREE.HemisphereLight(skyColorHex, groundColorHex, intensity);
+scene.add(hl);
 
 /****************************************
  * Controls

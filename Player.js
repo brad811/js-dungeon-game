@@ -81,7 +81,7 @@ function Player(camera) {
 	spotLightTarget.castShadow = false;
 	scene.add(spotLightTarget);
 
-	var spotLight = new THREE.SpotLight(0xffffff, 1);
+	var spotLight = new THREE.SpotLight(0xffffff, 2, 40);
 	spotLight.shadowDarkness = 1;
 
 	spotLight.shadowCameraNear = 0.5;
