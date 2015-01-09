@@ -38,11 +38,18 @@ function Player(camera) {
 	var moveLeft = false;
 	var moveRight = false;
 
-	//var isOnObject = false;
 	var canJump = false;
+	var contactNormal = new CANNON.Vec3();
+	var upAxis = new CANNON.Vec3(0,1,0);
+	cannonBody.addEventListener("collide", function(e){
+		var contact = e.contact;
+        if(contact.bi.id == cannonBody.id)
+            contact.ni.negate(contactNormal);
+        else
+            contactNormal.copy(contact.ni);
 
-	cannonBody.addEventListener("collide",function(e){
-		canJump = true;
+        if(contactNormal.dot(upAxis) > 0.5)
+            canJump = true;
 	});
 
 	var velocity = cannonBody.velocity;
@@ -103,7 +110,7 @@ function Player(camera) {
 
 			case 32: // space
 				if(canJump && scope.enabled) {
-					velocity.y += jumpVelocity;
+					velocity.y = jumpVelocity;
 					canJump = false;
 				}
 				break;
